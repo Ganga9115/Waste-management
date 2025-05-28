@@ -1,0 +1,80 @@
+.report-bin-container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  .report-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  
+  
+  .report-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+
+  .report-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .input-group {
+    display: flex;
+    align-items: center;
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 10px;
+    gap: 10px;
+  }
+  
+  .icon {
+    font-size: 18px;
+  }
+  
+  input,
+  textarea {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 14px;
+  }
+  
+  textarea {
+    resize: none;
+  }
+  .upload-button {
+    background-color: white;
+    border: 1px solid black;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .submit-button {
+    background-color: black;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .submit-button:hover {
+    background-color: gray;
+  }
+  .success-message {
+    color: green;
+    margin-top: 15px;
+    font-weight: bold;
+}
