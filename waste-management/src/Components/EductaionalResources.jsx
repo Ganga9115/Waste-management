@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { FaLeaf, FaRecycle, FaWater, FaLightbulb, FaBook, FaHandsHelping } from "react-icons/fa";
 import {Link} from 'react-router-dom'
+import NavBar from "./NavBar";
 const topics = [
   {
     icon: <FaLeaf className="text-green-600 text-3xl" />,
@@ -43,7 +44,9 @@ const topics = [
 
 const EducationalResources = () => {
   return (
-    <div className="p-4 sm:p-8 bg-green-50 min-h-screen">
+    <>
+    <NavBar />
+    <div className="pt-32 sm:pt-28 px-8 pb-8 bg-green-50 min-h-screen">
       <h1 className="text-3xl sm:text-4xl font-bold text-green-800 mb-8 text-center">
         Educational Resources
       </h1>
@@ -85,6 +88,7 @@ const EducationalResources = () => {
         </a>
       </div>
     </div>
+    </>
   );
 };
 

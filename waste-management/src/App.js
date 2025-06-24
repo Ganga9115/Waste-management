@@ -7,10 +7,13 @@ import DashBoard from './Components/DashBoard';
 import CompostingPage from "./Components/Composting";
 import VehicleTracking from "./Components/VechileTracking";
 import BinReporting from "./Components/BinReporting";
+import AdoptBin from "./Components/AdoptBin";
+import SpecializedPickUps from "./Components/SpecializedPickUps";
+
 function App() {
   return (
     <>
-   <Router>
+    <Router>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/signup" element={<SignUpPage />} />
@@ -20,8 +23,11 @@ function App() {
        <Route path="/composting" element={<CompostingPage />} />
        <Route path="/vehicle-track" element={<VehicleTracking />} />
        <Route path="/bin-reporting" element={<BinReporting />} />
+       <Route path="/adopt-bin" element={< AdoptBin/>} />
+       <Route path="/specialized-pickup" element={< SpecializedPickUps />} />
       </Routes>
-    </Router>  
+    </Router>   
+   
    
     </>
    
