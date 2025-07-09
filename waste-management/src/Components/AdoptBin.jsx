@@ -1,12 +1,144 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import AdoptImage from '../assets/adopt.png'; // adjust path if needed
 import Navbar from './NavBar';
+import axios from 'axios'; // Import axios for API calls
+import { toast } from 'react-toastify'; // Assuming you have react-toastify for notifications
+import 'react-toastify/dist/ReactToastify.css'; // Don't forget to import the CSS for toastify
+
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
 const AdoptBin = () => {
+  const [locationInput, setLocationInput] = useState('');
+  const [adoptedBins, setAdoptedBins] = useState([]);
+  const [message, setMessage] = useState(''); // To display success/error messages
+  const [messageType, setMessageType] = useState(''); // 'success' or 'error'
+
+  // Function to get the JWT token from localStorage
+  const getToken = () => localStorage.getItem('token');
+
+  // --- Fetch User's Adopted Bins ---
+  const fetchMyAdoptedBins = async () => {
+    try {
+      const token = getToken();
+      if (!token) {
+        // Handle unauthenticated state, maybe redirect to login
+        console.error('No authentication token found.');
+        return;
+      }
+
+      const response = await axios.get(`${API_BASE_URL}/api/adopt-bins/my-adopted-bins`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setAdoptedBins(response.data);
+    } catch (error) {
+      console.error('Error fetching adopted bins:', error);
+      // toast.error('Failed to load your adopted bins.'); // Optional: show toast
+    }
+  };
+
+  useEffect(() => {
+    fetchMyAdoptedBins();
+  }, []); // Run once on component mount
+
+  // --- Handle Location Input Change ---
+  const handleLocationInputChange = (e) => {
+    setLocationInput(e.target.value);
+    setMessage(''); // Clear message when typing
+    setMessageType('');
+  };
+
+  // --- Handle Share Live Location ---
+  const handleShareLiveLocation = () => {
+    setMessage('');
+    setMessageType('');
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          // For simplicity, we'll use lat/lng as the location string.
+          // In a real app, you might use a reverse geocoding API to get a human-readable address.
+          const liveLocation = `Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`;
+          setLocationInput(liveLocation);
+          toast.success('Live location captured!');
+        },
+        (error) => {
+          console.error('Error getting live location:', error);
+          if (error.code === error.PERMISSION_DENIED) {
+            setMessage('Geolocation permission denied. Please enable location services in your browser settings.');
+          } else {
+            setMessage('Failed to get live location. Please enter manually.');
+          }
+          setMessageType('error');
+          toast.error('Failed to get live location.');
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      );
+    } else {
+      setMessage('Geolocation is not supported by your browser. Please enter location manually.');
+      setMessageType('error');
+      toast.error('Geolocation not supported.');
+    }
+  };
+
+  // --- Handle Adopt Bin ---
+  const handleAdoptBin = async () => {
+    setMessage('');
+    setMessageType('');
+    if (!locationInput.trim()) {
+      setMessage('Please enter a location or share your live location.');
+      setMessageType('error');
+      toast.error('Location is required.');
+      return;
+    }
+
+    try {
+      const token = getToken();
+      if (!token) {
+        toast.error('You must be logged in to adopt a bin.');
+        return;
+      }
+
+      // 1. Check if bin is already adopted
+      const checkResponse = await axios.get(`${API_BASE_URL}/api/adopt-bins/adoption-status`, {
+        params: { location: locationInput.trim() },
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (checkResponse.data.isAdopted) {
+        setMessage(`This bin location is already adopted by ${checkResponse.data.adoptedBy || 'another user'}.`);
+        setMessageType('error');
+        toast.info(`This bin location is already adopted.`);
+        return;
+      }
+
+      // 2. If not adopted, proceed with adoption
+      const adoptResponse = await axios.post(`${API_BASE_URL}/api/adopt-bins/adopt`,
+        { location: locationInput.trim() },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (adoptResponse.status === 201) {
+        setMessage('Bin adopted successfully!');
+        setMessageType('success');
+        toast.success('Bin adopted successfully!');
+        setLocationInput(''); // Clear input after successful adoption
+        fetchMyAdoptedBins(); // Re-fetch adopted bins to update the list
+      }
+    } catch (error) {
+      console.error('Error adopting bin:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to adopt bin.';
+      setMessage(errorMessage);
+      setMessageType('error');
+      toast.error(errorMessage);
+    }
+  };
+
+
   return (
     <>
       <Navbar />
-
       <div className="min-h-screen bg-green-50 flex justify-center items-start px-10 pt-24 pb-10 gap-10">
         {/* LEFT - Responsibilities */}
         <div className="w-1/4">
@@ -34,12 +166,28 @@ const AdoptBin = () => {
             type="text"
             placeholder="Enter your location manually"
             className="w-80 p-2 border rounded mb-4"
+            value={locationInput}
+            onChange={handleLocationInputChange}
           />
-          <button className="bg-green-700 text-white px-4 py-2 rounded mb-4 hover:bg-green-800 transition">
+          <button
+            onClick={handleShareLiveLocation}
+            className="bg-green-700 text-white px-4 py-2 rounded mb-4 hover:bg-green-800 transition"
+          >
             Share live location
           </button>
+
+          {/* Display messages */}
+          {message && (
+            <p className={`mb-4 text-center ${messageType === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+              {message}
+            </p>
+          )}
+
           <img src={AdoptImage} alt="Adopt Bin" className="w-64 h-auto mb-4" />
-          <button className="bg-green-700 text-white px-6 py-2 rounded hover:bg-green-800 transition">
+          <button
+            onClick={handleAdoptBin}
+            className="bg-green-700 text-white px-6 py-2 rounded hover:bg-green-800 transition"
+          >
             ADOPT
           </button>
         </div>
@@ -61,20 +209,22 @@ const AdoptBin = () => {
           <div className="bg-white p-4 rounded-lg shadow">
             <h2 className="font-bold text-lg mb-2">YOUR ADOPTED BINS</h2>
             <div className="space-y-2 text-sm">
-              <div className="bg-gray-100 p-3 rounded flex justify-between items-center">
-                <div>
-                  <p className="font-semibold">Anna Nagar West →</p>
-                  <p className="text-xs text-gray-500">Bin Code: BIN2384</p>
-                </div>
-                <span className="text-green-700 font-semibold">Clean</span>
-              </div>
-              <div className="bg-gray-100 p-3 rounded flex justify-between items-center">
-                <div>
-                  <p className="font-semibold">T Nagar →</p>
-                  <p className="text-xs text-gray-500">Bin Code: BIN1147</p>
-                </div>
-                <span className="text-green-700 font-semibold">Clean</span>
-              </div>
+              {adoptedBins.length > 0 ? (
+                adoptedBins.map((bin) => (
+                  <div key={bin.id} className="bg-gray-100 p-3 rounded flex justify-between items-center">
+                    <div>
+                      <p className="font-semibold">{bin.location} →</p>
+                      {/* You can add a bin code if your AdoptedBin model had one */}
+                      {/* <p className="text-xs text-gray-500">Bin Code: {bin.binCode}</p> */}
+                    </div>
+                    {/* You could add dynamic status like 'Clean', 'Needs Attention' here */}
+                    {/* For now, it's static in your image, but the data is there */}
+                    <span className="text-green-700 font-semibold">Adopted</span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-center text-gray-500">No bins adopted yet.</p>
+              )}
             </div>
           </div>
         </div>

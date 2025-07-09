@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node App.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -15,7 +16,9 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.1",
     "mysql2": "^3.14.0",
-    "sequelize": "^6.37.6"
+    "sequelize": "^6.37.6",
+    "socket.io": "^4.8.1"
   }
 }
