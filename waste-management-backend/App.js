@@ -4,8 +4,10 @@ require("dotenv").config();
 const sequelize = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const binRoutes = require("./routes/binRoutes");
-const adoptBinRoutes = require("./routes/adoptBinRoutes"); // <--- ADD THIS LINE: Import new routes for Adopt a Bin
+const adoptBinRoutes = require("./routes/adoptBinRoutes");
 const authenticate = require("./middlewares/authMiddleware");
+// ✅ NEW: Import dashboardRoutes
+const dashboardRoutes = require("./routes/dashboardRoutes");
 
 // --- ADD THESE LINES FOR SOCKET.IO ---
 const http = require('http');
@@ -42,12 +44,15 @@ app.get("/", (req, res) => {
 // ========== Routes ==========
 app.use("/api/auth", authRoutes);
 app.use("/api/bins", binRoutes);
-app.use("/api/adopt-bins", adoptBinRoutes); // <--- ADD THIS LINE: Mount new routes for Adopt a Bin
+app.use("/api/adopt-bins", adoptBinRoutes);
+// ✅ NEW: Mount the dashboard routes
+app.use("/api/dashboard", dashboardRoutes);
 
-// ========== Protected Dashboard Route (Existing) ==========
-app.get("/api/dashboard", authenticate, (req, res) => {
-    res.json({ message: `Welcome to the Dashboard, ${req.user.email}` });
-});
+
+// ✅ REMOVED: This placeholder route is replaced by mounting dashboardRoutes above
+// app.get("/api/dashboard", authenticate, (req, res) => {
+//     res.json({ message: `Welcome to the Dashboard, ${req.user.email}` });
+// });
 
 // ========== Socket.IO Connection Handling ==========
 io.on('connection', (socket) => {
@@ -91,10 +96,12 @@ sequelize
     .then(() => {
         console.log("Database connection established successfully.");
 
-        sequelize.sync({ alter: true }) // `alter: true` will add new tables/columns (like AdoptedBins)
+        // `alter: true` will add new columns (like ecoPoints, currentLevel, binsAdopted to User)
+        // and new tables (if AdoptedBin wasn't created yet) without dropping existing data.
+        sequelize.sync({ alter: true })
             .then(() => {
                 console.log("Database models synced (altered as needed).");
-                server.listen(PORT, () => { // <--- CHANGE: Use 'server.listen' instead of 'app.listen'
+                server.listen(PORT, () => {
                     console.log(`Server is running on http://localhost:${PORT}`);
                     console.log(`Socket.IO is listening on port ${PORT}`);
                 });
@@ -109,4 +116,4 @@ sequelize
         process.exit(1);
     });
 
-module.exports = { app, io }; // <--- Export app and io for potential testing if needed
+module.exports = { app, io };
