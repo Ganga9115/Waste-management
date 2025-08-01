@@ -2,23 +2,21 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const sequelize = require("./config/db");
+
 const authRoutes = require("./routes/authRoutes");
 const binRoutes = require("./routes/binRoutes");
 const adoptBinRoutes = require("./routes/adoptBinRoutes");
-const authenticate = require("./middlewares/authMiddleware");
-// ✅ NEW: Import dashboardRoutes
 const dashboardRoutes = require("./routes/dashboardRoutes");
 
-// --- ADD THESE LINES FOR SOCKET.IO ---
-const http = require('http');
-const { Server } = require('socket.io');
-// ------------------------------------
+const authenticate = require("./middlewares/authMiddleware");
 
-require("./models"); // This ensures all models (User, ReportedBin, AdoptedBin) are loaded and associations set
+const http = require("http");
+const { Server } = require("socket.io");
+
+require("./models"); // Load models
 
 const app = express();
 
-// --- CREATE HTTP SERVER AND ATTACH SOCKET.IO ---
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
@@ -26,35 +24,30 @@ const io = new Server(server, {
         methods: ["GET", "POST"]
     }
 });
-// -----------------------------------------------
 
-// ========== Middlewares ==========
+// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Serve static files from the 'uploads' directory
 app.use('/uploads', express.static('uploads'));
 
-// ========== Basic Route ==========
+// Default route
 app.get("/", (req, res) => {
     res.send("🌱 Welcome to EcoTrack Waste Management API Server!");
 });
 
-// ========== Routes ==========
+// API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/bins", binRoutes);
 app.use("/api/adopt-bins", adoptBinRoutes);
-// ✅ NEW: Mount the dashboard routes
 app.use("/api/dashboard", dashboardRoutes);
 
+// Authenticated dashboard welcome message
+app.get("/api/dashboard", authenticate, (req, res) => {
+    res.json({ message: `Welcome to the Dashboard, ${req.user.email}` });
+});
 
-// ✅ REMOVED: This placeholder route is replaced by mounting dashboardRoutes above
-// app.get("/api/dashboard", authenticate, (req, res) => {
-//     res.json({ message: `Welcome to the Dashboard, ${req.user.email}` });
-// });
-
-// ========== Socket.IO Connection Handling ==========
+// Socket.IO logic
 io.on('connection', (socket) => {
     console.log(`A user connected: ${socket.id}`);
 
@@ -75,44 +68,34 @@ io.on('connection', (socket) => {
         });
     });
 
-    // Optional: Handle notification request from frontend
     socket.on('requestNotification', (data) => {
         console.log(`User ${data.userId} requested notification for vehicle ${data.vehicleId}`);
-        // In a real app, you'd store this preference and trigger a notification
-        // when the vehicle is near.
+        // You can implement further logic here
     });
 
     socket.on('disconnect', () => {
         console.log(`User disconnected: ${socket.id}`);
     });
 });
-// ---------------------------------------------------
 
-// ========== Start Server ==========
+// Start server after DB connection and syncing models
 const PORT = process.env.PORT || 5000;
 
 sequelize
     .authenticate()
     .then(() => {
         console.log("Database connection established successfully.");
-
-        // `alter: true` will add new columns (like ecoPoints, currentLevel, binsAdopted to User)
-        // and new tables (if AdoptedBin wasn't created yet) without dropping existing data.
-        sequelize.sync({ alter: true })
-            .then(() => {
-                console.log("Database models synced (altered as needed).");
-                server.listen(PORT, () => {
-                    console.log(`Server is running on http://localhost:${PORT}`);
-                    console.log(`Socket.IO is listening on port ${PORT}`);
-                });
-            })
-            .catch((err) => {
-                console.error("Database model sync failed:", err);
-                process.exit(1);
-            });
+        return sequelize.sync({ alter: true });
+    })
+    .then(() => {
+        console.log("Database models synced (altered as needed).");
+        server.listen(PORT, () => {
+            console.log(`Server is running on http://localhost:${PORT}`);
+            console.log(`Socket.IO is listening on port ${PORT}`);
+        });
     })
     .catch((err) => {
-        console.error("Database connection failed:", err);
+        console.error("Failed to start the server:", err);
         process.exit(1);
     });
 
