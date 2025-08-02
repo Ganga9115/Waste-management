@@ -36,7 +36,8 @@ const NavBar = () => {
       <h1 className="text-2xl font-bold text-green-700">EcoTrack</h1>
 
       <ul className="flex items-center space-x-6 text-green-700 font-medium">
-        <li><a href="#section1" className="hover:text-green-900">Home</a></li>
+        
+         <li><Link to="/dashboard" className="hover:text-green-600 transition">Home</Link></li>
         <li><Link to="/vehicle-track" className="hover:text-green-600 transition">Track</Link></li>
         <li><Link to="/bin-reporting" className="hover:text-green-600 transition">Report</Link></li>
         <li><Link to="/adopt-bin" className="hover:text-green-600 transition">AdoptBin</Link></li>
