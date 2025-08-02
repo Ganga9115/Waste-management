@@ -7,6 +7,7 @@ const authRoutes = require("./routes/authRoutes");
 const binRoutes = require("./routes/binRoutes");
 const adoptBinRoutes = require("./routes/adoptBinRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const pickupRoutes = require("./routes/pickupRoutes"); // ✅ NEW: Import the new pickup routes
 
 const authenticate = require("./middlewares/authMiddleware");
 
@@ -41,6 +42,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/bins", binRoutes);
 app.use("/api/adopt-bins", adoptBinRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/pickups", pickupRoutes); // ✅ NEW: Use the new pickup routes
 
 // Authenticated dashboard welcome message
 app.get("/api/dashboard", authenticate, (req, res) => {
@@ -70,7 +72,6 @@ io.on('connection', (socket) => {
 
     socket.on('requestNotification', (data) => {
         console.log(`User ${data.userId} requested notification for vehicle ${data.vehicleId}`);
-        // You can implement further logic here
     });
 
     socket.on('disconnect', () => {

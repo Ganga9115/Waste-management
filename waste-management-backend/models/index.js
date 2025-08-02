@@ -1,46 +1,50 @@
+// models/index.js
 const { Sequelize, DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 
-const UserModel = require("./User");
-const User = UserModel(sequelize, DataTypes); // Initialize User model
+// Import all models here directly
+const User = require("./User");
+const ReportedBin = require("./ReportedBin");
+const AdoptedBin = require("./AdoptedBin");
+const SpecializedPickup = require("./SpecializedPickup"); // ✅ NEW: Import the new model
 
-const ReportedBin = require("./ReportedBin"); // Import already initialized model
-const AdoptedBin = require("./AdoptedBin"); // Import already initialized model
-
-// ⭐ REMOVE THE DUPLICATE ReportedBin ASSOCIATION FROM HERE ⭐
-// User.hasMany(ReportedBin, {
-//     foreignKey: 'userId',
-//     as: 'reportedBins',
-//     onDelete: 'SET NULL',
-// });
-
-// A ReportedBin belongs to one User (existing)
+// A ReportedBin belongs to one User
 ReportedBin.belongsTo(User, {
     foreignKey: 'userId',
-    as: 'reporter', // This alias is used when including the User from a ReportedBin
+    as: 'reporter',
 });
 
-// NEW ASSOCIATION: A User can have many AdoptedBins
+// A User can have many AdoptedBins
 User.hasMany(AdoptedBin, {
     foreignKey: 'userId',
-    as: 'adoptedBins', // Alias for the association
+    as: 'adoptedBins',
     onDelete: 'CASCADE',
 });
 
-// NEW ASSOCIATION: An AdoptedBin belongs to one User
+// An AdoptedBin belongs to one User
 AdoptedBin.belongsTo(User, {
     foreignKey: 'userId',
-    as: 'adopter', // Alias for the association (e.g., bin.getAdopter())
+    as: 'adopter',
+});
+
+// ✅ NEW: Add associations for SpecializedPickup
+User.hasMany(SpecializedPickup, {
+    foreignKey: 'userId',
+    as: 'specializedPickups',
+});
+
+SpecializedPickup.belongsTo(User, {
+    foreignKey: 'userId',
+    as: 'requester',
 });
 
 
-// IMPORTANT: Call the 'associate' method on all models if they have one.
-// This loop will now correctly call User.associate, which has the User-ReportedBin definition.
+// Call the 'associate' method on all models if they have one.
 Object.values(sequelize.models).forEach(model => {
     if (model.associate) {
         model.associate(sequelize.models);
     }
 });
 
-
-module.exports = { User, ReportedBin, AdoptedBin, sequelize };
+// ✅ NEW: Add SpecializedPickup to the exports
+module.exports = { User, ReportedBin, AdoptedBin, SpecializedPickup, sequelize };
