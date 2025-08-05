@@ -3,11 +3,10 @@ const { SpecializedPickup } = require('../models');
 
 exports.requestPickup = async (req, res) => {
     try {
-        const { wasteType, address, pickupDate, pickupTime, additionalNotes } = req.body;
-        const userId = req.user.id; // Assuming auth middleware attaches user info
-        
-        const imagePath = req.file ? req.file.path.replace(/\\/g, '/') : null;
-        
+        // ✅ MODIFIED: Get the imageData from the body
+        const { wasteType, address, pickupDate, pickupTime, additionalNotes, wasteImageBase64 } = req.body;
+        const userId = req.user.id;
+
         if (!wasteType || !address || !pickupDate || !pickupTime) {
             return res.status(400).json({ message: 'Waste type, address, date, and time are required.' });
         }
@@ -18,7 +17,8 @@ exports.requestPickup = async (req, res) => {
             pickupDate,
             pickupTime,
             additionalNotes,
-            imagePath,
+            // ✅ MODIFIED: Store the Base64 string directly
+            imageData: wasteImageBase64,
             userId,
             status: 'Pending',
         });
@@ -30,13 +30,6 @@ exports.requestPickup = async (req, res) => {
 
     } catch (error) {
         console.error('Error requesting pickup:', error);
-        // If an image was uploaded but something failed, delete it
-        if (req.file) {
-            const fs = require('fs');
-            fs.unlink(req.file.path, (err) => {
-                if (err) console.error("Failed to delete uploaded file:", req.file.path, err);
-            });
-        }
         return res.status(500).json({ message: 'Server error while requesting pickup.', error: error.message });
     }
 };
