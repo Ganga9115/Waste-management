@@ -12,7 +12,8 @@ const SpecializedPickUps = () => {
     pickupTime: "",
     additionalNotes: "",
   });
-  const [selectedFile, setSelectedFile] = useState(null);
+  // ✅ MODIFIED: State to hold the Base64 string of the image
+  const [wasteImageBase64, setWasteImageBase64] = useState(null);
   const [agreed, setAgreed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -22,8 +23,18 @@ const SpecializedPickUps = () => {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
+  // ✅ MODIFIED: New handler to convert file to Base64
   const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setWasteImageBase64(reader.result); // Store the Base64 string
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setWasteImageBase64(null);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -44,21 +55,20 @@ const SpecializedPickUps = () => {
       return;
     }
 
-    const data = new FormData();
-    for (const key in formData) {
-      data.append(key, formData[key]);
-    }
-    if (selectedFile) {
-      data.append("wasteImage", selectedFile);
-    }
+    // ✅ MODIFIED: Send data as JSON, including the Base64 string
+    const dataToSend = {
+      ...formData,
+      wasteImageBase64,
+    };
 
     try {
       const response = await axios.post(
         "http://localhost:5000/api/pickups/request",
-        data,
+        dataToSend,
         {
           headers: {
-            "Content-Type": "multipart/form-data",
+            // ✅ MODIFIED: Change Content-Type to application/json
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         }
@@ -72,7 +82,7 @@ const SpecializedPickUps = () => {
         pickupTime: "",
         additionalNotes: "",
       });
-      setSelectedFile(null);
+      setWasteImageBase64(null); // Clear the Base64 data
       setAgreed(false);
     } catch (err) {
       console.error("Error confirming pickup:", err);

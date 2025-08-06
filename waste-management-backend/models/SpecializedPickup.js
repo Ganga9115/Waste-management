@@ -25,8 +25,9 @@ const SpecializedPickup = sequelize.define('SpecializedPickup', {
         type: DataTypes.TIME,
         allowNull: false,
     },
-    imagePath: {
-        type: DataTypes.STRING,
+    // ✅ MODIFIED: Change to TEXT to store the full Base64 string
+    imageData: { 
+        type: DataTypes.TEXT('long'), // 'long' allows for larger strings
         allowNull: true,
     },
     additionalNotes: {
@@ -40,7 +41,7 @@ const SpecializedPickup = sequelize.define('SpecializedPickup', {
     },
     userId: {
         type: DataTypes.INTEGER,
-        allowNull: false, // Assuming a pickup request must be from a logged-in user
+        allowNull: false,
         references: {
             model: 'Users',
             key: 'id',
