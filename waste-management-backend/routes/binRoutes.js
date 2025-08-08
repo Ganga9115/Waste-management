@@ -2,49 +2,20 @@
 const express = require('express');
 const router = express.Router();
 const binController = require('../controllers/binController');
-const authenticate = require('../middlewares/authMiddleware'); // Your authentication middleware
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs'); // Node.js built-in for file system operations
+const authenticate = require('../middlewares/authMiddleware'); 
 
-// Configure Multer for image storage
-const uploadDir = path.join(__dirname, '../uploads');
-// Ensure the uploads directory exists
-if (!fs.existsSync(uploadDir)){
-    fs.mkdirSync(uploadDir, { recursive: true }); // `recursive: true` ensures parent dirs are also created
-}
+// ✅ MODIFIED: Removed all imports related to file handling (multer, path, fs)
+// ✅ MODIFIED: Removed all multer configuration code
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadDir); // Save files in the 'uploads/' folder
-    },
-    filename: function (req, file, cb) {
-        // Use a unique name for the file to prevent overwrites
-        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
-    }
-});
+// ✅ MODIFIED: Route for reporting a bin
+// The `upload.array` middleware has been removed because we are no longer handling file uploads.
+// The data is now sent in the request body as JSON.
+router.post('/report', authenticate, binController.reportBin);
 
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB file size limit
-    fileFilter: (req, file, cb) => {
-        const filetypes = /jpeg|jpg|png|gif/;
-        const mimetype = filetypes.test(file.mimetype);
-        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+// Route to get all bin reports (e.g., for municipal view)
+router.get('/reports', authenticate, binController.getAllBinReports); 
 
-        if (mimetype && extname) {
-            return cb(null, true);
-        }
-        cb(new Error('Only images (jpeg, jpg, png, gif) are allowed!'));
-    }
-});
-
-// Route for reporting a bin (Protected: requires authentication, handles multiple image uploads)
-router.post('/report', authenticate, upload.array('images', 5), binController.reportBin);
-// 'images' in upload.array('images', 5) must match the formData.append('images', file) in your frontend.
-// The '5' is the max number of files.
-
-// Route to get all bin reports (e.g., for municipal view, or user's own reports)
-router.get('/reports', authenticate, binController.getAllBinReports); // Add this for fetching reports
+// ✅ NEW: Route to get reports specifically for the authenticated user
+router.get('/my-reports', authenticate, binController.getMyBinReports);
 
 module.exports = router;
