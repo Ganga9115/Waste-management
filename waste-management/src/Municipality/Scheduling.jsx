@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CheckCircle } from "lucide-react";
+import NavBar from "../Components/NavBar";
 
 const dummyData = [
   { id: "VH001", area: "Velachery", days: "Mon, Wed, Fri", timeSlot: "9:00 - 10:00 A.M.", approved: true },
@@ -27,6 +28,7 @@ const CollectionSchedule = () => {
 
   return (
     <div className="bg-green-50 min-h-screen p-6">
+      <NavBar/>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-semibold">Collection Schedule</h2>
         <input

@@ -4,18 +4,24 @@ import { UserCircle } from "lucide-react";
 
 const NavBar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [role, setRole] = useState(""); // store role here
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const storedRole = localStorage.getItem("role");
     setIsLoggedIn(!!token);
+    setRole(storedRole);
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("user");
     setIsLoggedIn(false);
+    setRole("");
     setShowDropdown(false);
     navigate("/"); // redirect to homepage
   };
@@ -37,12 +43,26 @@ const NavBar = () => {
 
       <ul className="flex items-center space-x-6 text-green-700 font-medium">
         
-         <li><Link to="/dashboard" className="hover:text-green-600 transition">Home</Link></li>
-        <li><Link to="/vehicle-track" className="hover:text-green-600 transition">Track</Link></li>
-        <li><Link to="/bin-reporting" className="hover:text-green-600 transition">Report</Link></li>
-        <li><Link to="/adopt-bin" className="hover:text-green-600 transition">AdoptBin</Link></li>
-        <li><Link to="/specialized-pickup" className="hover:text-green-600 transition">SpecialPickUp</Link></li>
-        <li><Link to="/educational-resources" className="hover:text-green-600 transition">Resources</Link></li>
+        {/* If normal user */}
+        {role === "user" && (
+          <>
+            <li><Link to="/dashboard" className="hover:text-green-600 transition">Home</Link></li>
+            <li><Link to="/vehicle-track" className="hover:text-green-600 transition">Track</Link></li>
+            <li><Link to="/bin-reporting" className="hover:text-green-600 transition">Report</Link></li>
+            <li><Link to="/adopt-bin" className="hover:text-green-600 transition">AdoptBin</Link></li>
+            <li><Link to="/specialized-pickup" className="hover:text-green-600 transition">SpecialPickUp</Link></li>
+            <li><Link to="/educational-resources" className="hover:text-green-600 transition">Resources</Link></li>
+          </>
+        )}
+
+        {/* If admin/municipality */}
+        {role === "admin" && (
+          <>
+            <li><Link to="/reports" className="hover:text-green-600 transition">Reports</Link></li>
+            <li><Link to="/scheduling" className="hover:text-green-600 transition">Scheduling</Link></li>
+            <li><Link to="/municipality-dashboard" className="hover:text-green-600 transition">Dashboard</Link></li>
+          </>
+        )}
 
         {isLoggedIn && (
           <li className="relative" ref={dropdownRef}>

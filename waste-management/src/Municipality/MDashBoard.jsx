@@ -8,6 +8,7 @@ import {
   FaChartLine,
   FaTruckLoading,
 } from "react-icons/fa";
+import NavBar from "../Components/NavBar";
 
 const truckIcon = new L.Icon({
   iconUrl: "https://cdn-icons-png.flaticon.com/512/3382/3382763.png",
@@ -21,6 +22,7 @@ const MDashBoard = () => {
 
   return (
     <div className="min-h-screen bg-green-50 p-6 font-sans">
+      <NavBar />
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <h1 className="text-xl font-bold border border-black inline-block px-4 py-1 mb-2">
