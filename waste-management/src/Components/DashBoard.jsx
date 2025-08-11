@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios'; // ✅ CHANGED: Import directly from 'axios'
+import axios from 'axios'; 
 import { FaTrashAlt, FaCalendarAlt, FaMapMarkerAlt, FaTrophy } from 'react-icons/fa';
 import NavBar from './NavBar';
 import { toast } from 'react-toastify';
 
 const Dashboard = () => {
-    // State to store fetched data
     const [dashboardData, setDashboardData] = useState({
         user: {
             fullName: 'Guest',
@@ -29,11 +28,8 @@ const Dashboard = () => {
             }
 
             try {
-                // Ensure the base URL is set for axios or use the full URL here
-                // For development, you can set it like this if not done globally
-                // axios.defaults.baseURL = 'http://localhost:5000'; // Add this line if not globally configured
 
-                const response = await axios.get('http://localhost:5000/api/dashboard', { // ✅ CHANGED: Use full URL for clarity
+                const response = await axios.get('http://localhost:5000/api/dashboard', { 
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -51,8 +47,6 @@ const Dashboard = () => {
 
         fetchDashboardData();
     }, []);
-
-    // Static/Sample data (can be replaced with API calls later if needed)
     const collectionSchedule = [
         { day: 'Monday', time: '7:00 AM - 10:00 AM', status: 'Completed' },
         { day: 'Wednesday', time: '7:00 AM - 10:00 AM', status: 'Upcoming' },

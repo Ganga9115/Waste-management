@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { ToastContainer } from 'react-toastify'; // Add this
 import 'react-toastify/dist/ReactToastify.css'; // Add this
 import LandingPage from "./Components/LandingPage";
 import SignUpPage from "./Components/SignUp";
@@ -11,6 +10,10 @@ import VehicleTracking from "./Components/VechileTracking";
 import BinReporting from "./Components/BinReporting";
 import AdoptBin from "./Components/AdoptBin";
 import SpecializedPickUps from "./Components/SpecializedPickUps";
+import RoleSelection from "./Components/RoleSelection";
+import MDashBoard from "./Municipality/MDashBoard"
+import Reports from "./Municipality/Reports"
+import Scheduling from "./Municipality/Scheduling"
 
 function App() {
   return (
@@ -27,6 +30,11 @@ function App() {
        <Route path="/bin-reporting" element={<BinReporting />} />
        <Route path="/adopt-bin" element={< AdoptBin/>} />
        <Route path="/specialized-pickup" element={< SpecializedPickUps />} />
+
+       <Route path="/choose-role" element={<RoleSelection />} />
+      <Route path="/municipality-dashboard" element={<MDashBoard/>} />
+      <Route path="/scheduling" element={<Scheduling/>} />
+      <Route path="/reports" element={<Reports/>} />
       </Routes>
     </Router>   
    

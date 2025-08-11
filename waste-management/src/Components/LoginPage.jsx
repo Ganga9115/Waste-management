@@ -1,14 +1,25 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import axios from "axios";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const queryParams = new URLSearchParams(location.search);
+  const roleFromUrl = queryParams.get("role");
+
   const [formData, setFormData] = useState({
-    identifier: "",  // ✅ email or mobile
+    identifier: "",
     password: "",
   });
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!roleFromUrl) {
+      navigate("/choose-role");
+    }
+  }, [roleFromUrl, navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -23,14 +34,22 @@ export default function LoginPage() {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", formData);
+      const response = await axios.post("http://localhost:5000/api/auth/login", {
+        ...formData,
+        role: roleFromUrl, 
+      });
 
       const { token, user } = response.data;
 
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("role", roleFromUrl);
 
-      navigate("/dashboard");
+      if (roleFromUrl === "admin") {
+        navigate("/municipality-dashboard");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (err) {
       console.error("Login error:", err.response?.data || err.message);
       setError(err.response?.data?.message || "Login failed. Please try again.");
@@ -40,12 +59,17 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-green-50 px-6 py-12">
       <div className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
-        <h2 className="text-3xl font-bold text-green-800 mb-6 text-center">Login to EcoTrack</h2>
+        <h2 className="text-3xl font-bold text-green-800 mb-6 text-center">
+          {roleFromUrl === "admin" ? "Municipality Login" : "User Login"}
+        </h2>
+
         {error && <p className="text-red-600 text-sm mb-4 text-center">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block mb-1 text-green-700 font-medium">Email or Mobile Number</label>
+            <label className="block mb-1 text-green-700 font-medium">
+              Email or Mobile Number
+            </label>
             <input
               type="text"
               name="identifier"
@@ -76,14 +100,15 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="text-center text-sm text-green-700 mt-6">
-          Don't have an account?{" "}
-          <button
-            onClick={() => navigate("/signup")}
-            className="text-green-900 font-medium hover:underline"
+        {/* Sign up link */}
+        <p className="text-center text-sm text-gray-600 mt-4">
+          Don''t have an account?{" "}
+          <Link
+            to={`/signup?role=${roleFromUrl}`} 
+            className="text-green-600 hover:underline"
           >
-            Register here
-          </button>
+            Sign up
+          </Link>
         </p>
       </div>
     </div>
