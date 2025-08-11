@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import NavBar from '../Components/NavBar';
 
 const Reports = () => {
   const reports = [
@@ -30,6 +31,7 @@ const Reports = () => {
 
   return (
     <div className="min-h-screen bg-green-50 p-8">
+      <NavBar/>
       <h1 className="text-4xl font-extrabold text-center text-gray-800 mb-10">MANAGE REPORTS</h1>
       <div className="flex flex-col md:flex-row gap-8">
         {/* View Reports */}
