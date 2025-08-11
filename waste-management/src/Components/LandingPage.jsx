@@ -47,9 +47,13 @@ export default function LandingPage() {
     document.documentElement.style.scrollBehavior = "smooth";
   }, []);
 
-  const handleGetStarted = () => {
+/*  const handleGetStarted = () => {
     navigate("/signup");
-  };
+  };*/
+  
+const handleGetStarted = () => {
+  navigate("/choose-role");
+};
 
   return (
     <div className="scroll-smooth">
