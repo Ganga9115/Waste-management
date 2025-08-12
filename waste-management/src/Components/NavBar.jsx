@@ -56,7 +56,7 @@ const NavBar = () => {
         )}
 
         {/* If admin/municipality */}
-        {role === "admin" && (
+        {role === "municipality" && (
           <>
             <li><Link to="/reports" className="hover:text-green-600 transition">Reports</Link></li>
             <li><Link to="/scheduling" className="hover:text-green-600 transition">Scheduling</Link></li>

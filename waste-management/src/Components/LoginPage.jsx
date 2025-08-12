@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import axios from "axios";
 
+// Using environment variables for the API base URL is a good practice
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -34,9 +37,9 @@ export default function LoginPage() {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
         ...formData,
-        role: roleFromUrl, 
+        role: roleFromUrl,
       });
 
       const { token, user } = response.data;
@@ -45,7 +48,8 @@ export default function LoginPage() {
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("role", roleFromUrl);
 
-      if (roleFromUrl === "admin") {
+      // ✅ UPDATED: Changed 'admin' to 'municipality' to match the User model
+      if (roleFromUrl === "municipality") {
         navigate("/municipality-dashboard");
       } else {
         navigate("/dashboard");
@@ -60,7 +64,8 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-green-50 px-6 py-12">
       <div className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
         <h2 className="text-3xl font-bold text-green-800 mb-6 text-center">
-          {roleFromUrl === "admin" ? "Municipality Login" : "User Login"}
+          {/* ✅ UPDATED: Changed 'admin' to 'municipality' for display */}
+          {roleFromUrl === "municipality" ? "Municipality Login" : "User Login"}
         </h2>
 
         {error && <p className="text-red-600 text-sm mb-4 text-center">{error}</p>}
@@ -100,11 +105,10 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Sign up link */}
         <p className="text-center text-sm text-gray-600 mt-4">
-          Don''t have an account?{" "}
+          Don't have an account?{" "}
           <Link
-            to={`/signup?role=${roleFromUrl}`} 
+            to={`/signup?role=${roleFromUrl}`}
             className="text-green-600 hover:underline"
           >
             Sign up

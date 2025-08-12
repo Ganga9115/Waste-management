@@ -15,7 +15,8 @@ export default function RoleSelection() {
             User Login
           </button>
           <button
-            onClick={() => navigate("/login?role=admin")}
+            // ✅ UPDATED: Changed 'admin' to 'municipality'
+            onClick={() => navigate("/login?role=municipality")}
             className="w-full bg-green-300 text-white py-3 rounded-lg text-lg font-semibold hover:bg-orange-600 transition-colors"
           >
             Municipality Login
