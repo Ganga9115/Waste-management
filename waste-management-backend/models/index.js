@@ -6,12 +6,25 @@ const sequelize = require("../config/db");
 const User = require("./User");
 const ReportedBin = require("./ReportedBin");
 const AdoptedBin = require("./AdoptedBin");
-const SpecializedPickup = require("./SpecializedPickup"); // ✅ NEW: Import the new model
+const SpecializedPickup = require("./SpecializedPickup");
+const Vehicle = require("./Vehicle"); // ✅ NEW: Import the new Vehicle model
 
 // A ReportedBin belongs to one User
 ReportedBin.belongsTo(User, {
     foreignKey: 'userId',
     as: 'reporter',
+});
+
+// A ReportedBin belongs to one Vehicle
+ReportedBin.belongsTo(Vehicle, {
+    foreignKey: 'assignedVehicleId',
+    as: 'assignedVehicle',
+});
+
+// A Vehicle can have many ReportedBins
+Vehicle.hasMany(ReportedBin, {
+    foreignKey: 'assignedVehicleId',
+    as: 'assignedReports',
 });
 
 // A User can have many AdoptedBins
@@ -27,7 +40,7 @@ AdoptedBin.belongsTo(User, {
     as: 'adopter',
 });
 
-// ✅ NEW: Add associations for SpecializedPickup
+// Add associations for SpecializedPickup
 User.hasMany(SpecializedPickup, {
     foreignKey: 'userId',
     as: 'specializedPickups',
@@ -46,5 +59,4 @@ Object.values(sequelize.models).forEach(model => {
     }
 });
 
-// ✅ NEW: Add SpecializedPickup to the exports
-module.exports = { User, ReportedBin, AdoptedBin, SpecializedPickup, sequelize };
+module.exports = { User, ReportedBin, AdoptedBin, SpecializedPickup, Vehicle, sequelize }; // ✅ NEW: Add Vehicle to the exports
