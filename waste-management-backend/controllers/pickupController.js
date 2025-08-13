@@ -3,7 +3,6 @@ const { SpecializedPickup } = require('../models');
 
 exports.requestPickup = async (req, res) => {
     try {
-        // ✅ MODIFIED: Get the imageData from the body
         const { wasteType, address, pickupDate, pickupTime, additionalNotes, wasteImageBase64 } = req.body;
         const userId = req.user.id;
 
@@ -17,7 +16,6 @@ exports.requestPickup = async (req, res) => {
             pickupDate,
             pickupTime,
             additionalNotes,
-            // ✅ MODIFIED: Store the Base64 string directly
             imageData: wasteImageBase64,
             userId,
             status: 'Pending',

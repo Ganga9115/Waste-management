@@ -5,7 +5,6 @@ import { io } from "socket.io-client";
 import { Bell, Send } from "lucide-react";
 import NavBar from "./NavBar";
 
-
 const MapUpdater = ({ position }) => {
   const map = useMapEvents({});
   useEffect(() => {
@@ -18,7 +17,6 @@ const MapUpdater = ({ position }) => {
   return null;
 };
 
-
 const VehicleTracking = () => {
   const [vehicleData, setVehicleData] = useState({
     id: "Loading...",
@@ -27,6 +25,7 @@ const VehicleTracking = () => {
     arrivalTime: "Loading...",
     status: "Scheduled",
   });
+  const [upcomingVehicles, setUpcomingVehicles] = useState([]); // ✅ NEW state
   const [mobileNumber, setMobileNumber] = useState(''); 
   const [messageInput, setMessageInput] = useState(''); 
   const [notificationStatus, setNotificationStatus] = useState(''); 
@@ -34,7 +33,6 @@ const VehicleTracking = () => {
   const socket = useRef(null); 
 
   useEffect(() => {
-  
     if (!socket.current) {
       socket.current = io(process.env.REACT_APP_BACKEND_URL || "http://localhost:5000");
 
@@ -46,7 +44,6 @@ const VehicleTracking = () => {
         console.log('Disconnected from WebSocket server');
       });
 
-   
       socket.current.on('vehicleLocationUpdate', (data) => {
         console.log('Received real-time update:', data);
         setVehicleData({
@@ -62,6 +59,7 @@ const VehicleTracking = () => {
         console.log(message);
       });
     }
+
     const fetchInitialVehicleData = async () => {
       try {
         const response = await fetch('http://localhost:5000/api/vehicle/current');
@@ -82,7 +80,21 @@ const VehicleTracking = () => {
       }
     };
 
+    // ✅ Fetch upcoming vehicles
+    const fetchUpcoming = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/vehicle/upcoming');
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const data = await res.json();
+        console.log("Upcoming Vehicles:", data);
+        setUpcomingVehicles(data);
+      } catch (error) {
+        console.error("Error fetching upcoming vehicles:", error);
+      }
+    };
+
     fetchInitialVehicleData();
+    fetchUpcoming();
 
     return () => {
       if (socket.current) {
@@ -92,13 +104,11 @@ const VehicleTracking = () => {
     };
   }, []); 
 
-  
   const handleNotifyMe = async () => {
     if (!mobileNumber) {
       const inputNumber = prompt("Please enter your mobile number (e.g., +1234567890) to receive notifications:");
       if (inputNumber) {
         setMobileNumber(inputNumber);
-       
         try {
           const registerResponse = await fetch('http://localhost:5000/api/notifications/register-mobile', {
             method: 'POST',
@@ -145,7 +155,6 @@ const VehicleTracking = () => {
     }
   };
 
-
   const handleSendMessage = async () => {
     if (!messageInput.trim()) {
       setNotificationStatus('Message cannot be empty.');
@@ -165,7 +174,7 @@ const VehicleTracking = () => {
         throw new Error(data.message || 'Failed to send message.');
       }
       setNotificationStatus('Message sent!');
-      setMessageInput(''); // Clear input
+      setMessageInput('');
     } catch (error) {
       console.error("Error sending message:", error);
       setNotificationStatus(`Error: ${error.message}`);
@@ -187,7 +196,7 @@ const VehicleTracking = () => {
 
   return (
     <>
-     <NavBar/>
+      <NavBar/>
       <div className="min-h-screen w-full bg-green-50 flex items-start justify-center pt-32 px-4 pb-16">
         <div className="flex flex-col lg:flex-row gap-6 w-full max-w-screen-xl">
 
@@ -229,6 +238,18 @@ const VehicleTracking = () => {
                 </p>
               </div>
 
+              {/* ✅ Show upcoming vehicles list */}
+              {upcomingVehicles.length > 0 && (
+                <div className="bg-gray-50 p-3 rounded-lg shadow-inner mb-4">
+                  <h4 className="font-semibold text-green-700 mb-2">Next Vehicles</h4>
+                  <ul className="text-sm text-gray-700">
+                    {upcomingVehicles.map((v, idx) => (
+                      <li key={idx}>🚛 {v.id} — ETA: {v.arrivalTime}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {/* Collection Status */}
               <div className="bg-white p-4 rounded-lg shadow-md mb-4">
                 <h4 className="text-md font-semibold text-green-800 mb-3">Collection Status</h4>
@@ -250,14 +271,12 @@ const VehicleTracking = () => {
                 </div>
               </div>
 
-              {/* Notification Status Message */}
               {notificationStatus && (
                 <div className="text-center text-sm text-blue-600 mb-2">
                   {notificationStatus}
                 </div>
               )}
 
-              {/* Notify Button */}
               <button
                 onClick={handleNotifyMe}
                 className="w-full bg-green-100 hover:bg-green-200 text-green-800 font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition mb-4"
@@ -265,7 +284,6 @@ const VehicleTracking = () => {
                 Notify Me <Bell className="w-4 h-4" />
               </button>
 
-              {/* Message Box */}
               <div className="flex items-center bg-white border rounded-lg shadow-sm p-2">
                 <input
                   type="text"
@@ -297,4 +315,3 @@ const VehicleTracking = () => {
 };
 
 export default VehicleTracking;
-

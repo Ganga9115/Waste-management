@@ -1,6 +1,6 @@
 // models/ReportedBin.js
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db'); // Your database connection instance
+const sequelize = require('../config/db'); 
 
 const ReportedBin = sequelize.define('ReportedBin', {
     id: {
@@ -10,16 +10,16 @@ const ReportedBin = sequelize.define('ReportedBin', {
         allowNull: false,
     },
     imagePaths: {
-        type: DataTypes.JSON, // Stores an array of strings like ['uploads/image1.jpg', 'uploads/image2.jpg']
+        type: DataTypes.JSON, 
         allowNull: true,
         defaultValue: [],
     },
     latitude: {
-        type: DataTypes.DECIMAL(10, 8), // For precise latitude (e.g., 10 digits total, 8 after decimal)
+        type: DataTypes.DECIMAL(10, 8), 
         allowNull: false,
     },
     longitude: {
-        type: DataTypes.DECIMAL(11, 8), // For precise longitude (e.g., 11 digits total, 8 after decimal)
+        type: DataTypes.DECIMAL(11, 8), 
         allowNull: false,
     },
     priority: {
@@ -36,17 +36,17 @@ const ReportedBin = sequelize.define('ReportedBin', {
         allowNull: false,
         defaultValue: 'Pending',
     },
-    userId: { // Foreign key for associating with the User
+    userId: { 
         type: DataTypes.INTEGER,
-        allowNull: true, // Set to false if a report MUST be from a logged-in user
+        allowNull: true, 
         references: {
-            model: 'Users', // This should match the table name Sequelize creates for your User model (usually pluralized)
+            model: 'Users', 
             key: 'id',
         },
     },
 }, {
-    tableName: 'ReportedBins', // Explicitly set table name if you prefer
-    timestamps: true, // Enables createdAt and updatedAt fields
+    tableName: 'ReportedBins', 
+    timestamps: true, 
 });
 
 module.exports = ReportedBin;

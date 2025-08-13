@@ -2,7 +2,7 @@ const { User } = require("../models");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { Op } = require("sequelize");
-
+const isValidIndianPhone = require("../validators/phoneValidator");
 exports.signup = async (req, res) => {
   const { fullName, email, mobile, address, pincode, password, role } = req.body; // ✅ Added role
 
@@ -19,7 +19,7 @@ exports.signup = async (req, res) => {
       address,
       pincode,
       password: hashedPassword,
-      role: role || "user", // ✅ Default to 'user' if not provided
+      role: role || "user", 
       ecoPoints: 0,
       currentLevel: 'Beginner',
       binsAdopted: 0
@@ -33,14 +33,14 @@ exports.signup = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-  const { identifier, password, role } = req.body; // ✅ Added role
+  const { identifier, password, role } = req.body; 
 
   console.log("🟡 Login attempt with:", identifier, "Role:", role);
 
   try {
     const user = await User.findOne({
       where: {
-        role, // ✅ Match role as well
+        role, 
         [Op.or]: [
           { email: identifier },
           { mobile: identifier }
@@ -72,4 +72,13 @@ exports.login = async (req, res) => {
     console.error("🔥 Login error:", err);
     res.status(500).json({ message: "Server error", error: err.message });
   }
+};
+
+exports.registerUser = (req, res) => {
+    const { phone } = req.body;
+
+    if (!isValidIndianPhone(phone)) {
+        return res.status(400).json({ error: "Invalid Indian phone number. Must be 10 digits starting with 6-9." });
+    }
+    res.status(201).json({ message: "User registered successfully" });
 };

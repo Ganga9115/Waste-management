@@ -7,7 +7,7 @@ const authRoutes = require("./routes/authRoutes");
 const binRoutes = require("./routes/binRoutes");
 const adoptBinRoutes = require("./routes/adoptBinRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
-const pickupRoutes = require("./routes/pickupRoutes"); // ✅ NEW: Import the new pickup routes
+const pickupRoutes = require("./routes/pickupRoutes");
 
 const authenticate = require("./middlewares/authMiddleware");
 
@@ -26,6 +26,57 @@ const io = new Server(server, {
     }
 });
 
+// -----------------------
+// 🚛 Vehicle Tracking Setup
+// -----------------------
+let vehicles = [
+    {
+        id: "TRUCK-001",
+        latitude: 37.7749,
+        longitude: -122.4194,
+        arrivalTime: "10:30 AM",
+        status: "On the way"
+    },
+    {
+        id: "TRUCK-002",
+        latitude: 37.7849,
+        longitude: -122.4094,
+        arrivalTime: "11:00 AM",
+        status: "Scheduled"
+    }
+];
+
+// Route to get current vehicle
+app.get("/api/vehicle/current", (req, res) => {
+    res.json(vehicles[0]); // Active vehicle
+});
+
+// Route to get upcoming vehicles
+app.get("/api/vehicle/upcoming", (req, res) => {
+    res.json(vehicles.slice(1));
+});
+
+// Simulate vehicle movement every 5 seconds
+setInterval(() => {
+    vehicles = vehicles.map(v => ({
+        ...v,
+        latitude: v.latitude + (Math.random() - 0.5) * 0.001,
+        longitude: v.longitude + (Math.random() - 0.5) * 0.001
+    }));
+
+    // Emit updated location for current vehicle
+    io.emit("vehicleLocationUpdate", {
+        vehicleId: vehicles[0].id,
+        lat: vehicles[0].latitude,
+        lng: vehicles[0].longitude,
+        arrivalTime: vehicles[0].arrivalTime,
+        status: vehicles[0].status,
+        timestamp: new Date()
+    });
+}, 5000);
+
+// -----------------------
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -42,7 +93,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/bins", binRoutes);
 app.use("/api/adopt-bins", adoptBinRoutes);
 app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/pickups", pickupRoutes); // ✅ NEW: Use the new pickup routes
+app.use("/api/pickups", pickupRoutes);
 
 // Authenticated dashboard welcome message
 app.get("/api/dashboard", authenticate, (req, res) => {
@@ -62,6 +113,14 @@ io.on('connection', (socket) => {
 
     socket.on('updateVehicleLocation', (data) => {
         console.log(`Vehicle ${data.vehicleId} updated location to Lat: ${data.lat}, Lng: ${data.lng}`);
+
+        // Update in-memory vehicle data
+        const idx = vehicles.findIndex(v => v.id === data.vehicleId);
+        if (idx !== -1) {
+            vehicles[idx].latitude = data.lat;
+            vehicles[idx].longitude = data.lng;
+        }
+
         io.emit('vehicleLocationUpdate', {
             vehicleId: data.vehicleId,
             lat: data.lat,

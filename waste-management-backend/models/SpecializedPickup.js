@@ -25,9 +25,8 @@ const SpecializedPickup = sequelize.define('SpecializedPickup', {
         type: DataTypes.TIME,
         allowNull: false,
     },
-    // ✅ MODIFIED: Change to TEXT to store the full Base64 string
     imageData: { 
-        type: DataTypes.TEXT('long'), // 'long' allows for larger strings
+        type: DataTypes.TEXT('long'), 
         allowNull: true,
     },
     additionalNotes: {

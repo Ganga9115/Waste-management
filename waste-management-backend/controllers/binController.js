@@ -1,21 +1,16 @@
 // controllers/binController.js
-const { ReportedBin } = require('../models'); // Get the ReportedBin model from index.js
+const { ReportedBin } = require('../models'); 
 const path = require('path');
 
 exports.reportBin = async (req, res) => {
     try {
-        // Multer stores uploaded files in req.files (because upload.array is used)
-        const imagePaths = req.files ? req.files.map(file => file.path.replace(/\\/g, '/')) : []; // Ensure forward slashes for URLs
+        const imagePaths = req.files ? req.files.map(file => file.path.replace(/\\/g, '/')) : []; 
 
-        // req.body contains text fields: latitude, longitude, priority, comments
         const { latitude, longitude, priority, comments } = req.body;
 
-        // Basic validation
         if (!latitude || !longitude || !priority) {
             return res.status(400).json({ message: 'Location (latitude, longitude) and priority are required.' });
         }
-
-        // Convert latitude and longitude to numbers (they come as strings from FormData)
         const parsedLatitude = parseFloat(latitude);
         const parsedLongitude = parseFloat(longitude);
 
@@ -23,9 +18,7 @@ exports.reportBin = async (req, res) => {
             return res.status(400).json({ message: 'Invalid latitude or longitude values.' });
         }
 
-        // Get userId from the authenticated user.
-        // Assuming your `authenticate` middleware attaches user info to `req.user`.
-        const userId = req.user ? req.user.id : null; // If `userId` is optional, allow null. If mandatory, remove `null`.
+        const userId = req.user ? req.user.id : null;
 
         const newReport = await ReportedBin.create({
             imagePaths: imagePaths,
@@ -34,7 +27,7 @@ exports.reportBin = async (req, res) => {
             priority,
             comments,
             userId,
-            status: 'Pending', // Default status for a new report
+            status: 'Pending', 
         });
 
         res.status(201).json({
@@ -44,7 +37,6 @@ exports.reportBin = async (req, res) => {
 
     } catch (error) {
         console.error('Error reporting bin:', error);
-        // Clean up uploaded files if something goes wrong after upload
         if (req.files) {
             const fs = require('fs');
             req.files.forEach(file => {
@@ -57,16 +49,15 @@ exports.reportBin = async (req, res) => {
     }
 };
 
-// Example for fetching reports (optional, but useful for municipality or user history)
 exports.getAllBinReports = async (req, res) => {
     try {
         const reports = await ReportedBin.findAll({
-            include: { // Include user info if you want to display who reported it
+            include: { 
                 model: require('../models').User,
                 as: 'reporter',
-                attributes: ['id', 'email'] // Only fetch necessary user attributes
+                attributes: ['id', 'email'] 
             },
-            order: [['createdAt', 'DESC']] // Order by newest first
+            order: [['createdAt', 'DESC']] 
         });
         res.status(200).json(reports);
     } catch (error) {
@@ -74,5 +65,3 @@ exports.getAllBinReports = async (req, res) => {
         res.status(500).json({ message: 'Server error while fetching bin reports.', error: error.message });
     }
 };
-
-// You can add more controller methods here (e.g., getById, updateStatus, delete)

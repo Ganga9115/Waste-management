@@ -46,7 +46,7 @@ defaultValue: 0
  role: {
       type: DataTypes.STRING,
       allowNull: false,
-      defaultValue: "user" // or "guest"
+      defaultValue: "user" 
     }
 }
 );

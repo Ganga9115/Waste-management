@@ -1,32 +1,28 @@
 // waste-management-backend/controllers/adoptBinController.js
 const { AdoptedBin, User } = require('../models');
-const { Op } = require('sequelize'); // For potentially filtering by location string
+const { Op } = require('sequelize'); 
 
-// Controller to adopt a bin
 const adoptBin = async (req, res) => {
     try {
         const { location } = req.body;
-        const userId = req.user.id; // User ID from authenticated middleware
+        const userId = req.user.id; 
 
         if (!location) {
             return res.status(400).json({ message: 'Location is required to adopt a bin.' });
         }
 
-        // Check if a bin at this location is already adopted
         const existingAdoption = await AdoptedBin.findOne({
             where: {
                 location: {
-                    [Op.like]: location // Use Op.like for case-insensitive or partial match if needed, or Op.eq for exact match
+                    [Op.like]: location 
                 }
             }
         });
 
-        // Correction for the typo: existingAdition -> existingAdoption
         if (existingAdoption) {
             return res.status(409).json({ message: 'This bin location is already adopted.' });
         }
 
-        // Create new adoption record
         const newAdoptedBin = await AdoptedBin.create({
             userId,
             location,
@@ -41,10 +37,9 @@ const adoptBin = async (req, res) => {
     }
 };
 
-// Controller to check adoption status for a given location
 const checkAdoptionStatus = async (req, res) => {
     try {
-        const { location } = req.query; // Use req.query for GET parameters
+        const { location } = req.query; 
 
         if (!location) {
             return res.status(400).json({ message: 'Location is required to check status.' });
@@ -59,13 +54,11 @@ const checkAdoptionStatus = async (req, res) => {
             include: [{
                 model: User,
                 as: 'adopter',
-                // --- FIX: Changed 'username' to 'fullName' to match your User.js model ---
                 attributes: ['fullName', 'email']
             }]
         });
 
         if (existingAdoption) {
-            // --- FIX: Accessing existingAdoption.adopter.fullName instead of .username ---
             return res.status(200).json({ isAdopted: true, adoptedBy: existingAdoption.adopter.fullName || existingAdoption.adopter.email });
         } else {
             return res.status(200).json({ isAdopted: false });
@@ -77,10 +70,9 @@ const checkAdoptionStatus = async (req, res) => {
     }
 };
 
-// Controller to get bins adopted by the current user
 const getMyAdoptedBins = async (req, res) => {
     try {
-        const userId = req.user.id; // User ID from authenticated middleware
+        const userId = req.user.id; 
 
         const myAdoptedBins = await AdoptedBin.findAll({
             where: { userId },
